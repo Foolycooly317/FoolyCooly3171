@@ -1,3 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>FLCL</title>
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+      background: #050505;
+      color: white;
+      font-family: Arial;
+    }
+
+    canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+    }
+
+    .content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      margin-top: 100px;
+      pointer-events: none;
+    }
+
+    img {
+      border-radius: 50%;
+      width: 150px;
+      height: 150px;
+      object-fit: cover;
+      border: 2px solid white;
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="bg"></canvas>
+
+<div class="content">
+  <img src="https://cdn.discordapp.com/avatars/1269523754032037935/0b7756e0cdc5edb30c5bf2b3ff9e2bb5.png?size=1024">
+  <h1>FLCL</h1>
+  <p>This is my custom profile page</p>
+</div>
+
 <script>
 const canvas = document.getElementById("bg");
 const ctx = canvas.getContext("2d");
@@ -10,59 +57,22 @@ function resize() {
   canvas.height = window.innerHeight;
   dots = [];
 
-  for (let i = 0; i < 260; i++) {
+  for (let i = 0; i < 230; i++) {
+    let baseX = Math.random() * canvas.width;
+    let baseY = Math.random() * canvas.height;
+
     dots.push({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      targetX: null,
-      targetY: null,
+      x: baseX,
+      y: baseY,
+      baseX: baseX,
+      baseY: baseY,
+      targetX: baseX,
+      targetY: baseY,
       size: Math.random() * 2 + 1,
       power: Math.random() * 70 + 35,
-      moving: false
+      returning: false
     });
   }
-}
-
-function randomGoodSpot() {
-  let best = { x: Math.random() * canvas.width, y: Math.random() * canvas.height };
-  let bestScore = -1;
-
-  for (let i = 0; i < 35; i++) {
-    let x = 25 + Math.random() * (canvas.width - 50);
-    let y = 25 + Math.random() * (canvas.height - 50);
-    let score = Infinity;
-
-    for (let dot of dots) {
-      let dx = x - dot.x;
-      let dy = y - dot.y;
-      let dist = Math.sqrt(dx * dx + dy * dy);
-      score = Math.min(score, dist);
-    }
-
-    if (score > bestScore) {
-      bestScore = score;
-      best = { x, y };
-    }
-  }
-
-  return best;
-}
-
-function moveSomeDotsToEmptySpots() {
-  let amount = 15 + Math.floor(Math.random() * 15);
-
-  let shuffled = dots
-    .filter(dot => !dot.moving)
-    .sort(() => Math.random() - 0.5);
-
-  for (let i = 0; i < Math.min(amount, shuffled.length); i++) {
-    let spot = randomGoodSpot();
-    shuffled[i].targetX = spot.x;
-    shuffled[i].targetY = spot.y;
-    shuffled[i].moving = true;
-  }
-
-  setTimeout(moveSomeDotsToEmptySpots, 3000 + Math.random() * 2000);
 }
 
 window.addEventListener("resize", resize);
@@ -77,31 +87,56 @@ window.addEventListener("mouseleave", () => {
   mouse.y = null;
 });
 
+function safeSpot(dot) {
+  let x = dot.baseX;
+  let y = dot.baseY;
+
+  if (mouse.x !== null && mouse.y !== null) {
+    let dx = x - mouse.x;
+    let dy = y - mouse.y;
+    let dist = Math.sqrt(dx * dx + dy * dy);
+
+    if (dist < mouse.radius + 40) {
+      let angle = Math.atan2(dy, dx);
+      x = mouse.x + Math.cos(angle) * (mouse.radius + 60);
+      y = mouse.y + Math.sin(angle) * (mouse.radius + 60);
+    }
+  }
+
+  x = Math.max(20, Math.min(canvas.width - 20, x));
+  y = Math.max(20, Math.min(canvas.height - 20, y));
+
+  return { x, y };
+}
+
 function animate() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   for (let dot of dots) {
     let offScreen =
-      dot.x < -20 ||
-      dot.x > canvas.width + 20 ||
-      dot.y < -20 ||
-      dot.y > canvas.height + 20;
+      dot.x < -10 ||
+      dot.x > canvas.width + 10 ||
+      dot.y < -10 ||
+      dot.y > canvas.height + 10;
 
-    if (offScreen && !dot.moving) {
-      let spot = randomGoodSpot();
+    if (offScreen && !dot.returning) {
+      let spot = safeSpot(dot);
       dot.targetX = spot.x;
       dot.targetY = spot.y;
-      dot.moving = true;
+      dot.returning = true;
     }
 
-    if (dot.moving) {
-      dot.x += (dot.targetX - dot.x) * 0.05;
-      dot.y += (dot.targetY - dot.y) * 0.05;
+    if (dot.returning) {
+      dot.x += (dot.targetX - dot.x) * 0.08;
+      dot.y += (dot.targetY - dot.y) * 0.08;
 
-      if (Math.abs(dot.x - dot.targetX) < 1 && Math.abs(dot.y - dot.targetY) < 1) {
+      if (
+        Math.abs(dot.x - dot.targetX) < 1 &&
+        Math.abs(dot.y - dot.targetY) < 1
+      ) {
         dot.x = dot.targetX;
         dot.y = dot.targetY;
-        dot.moving = false;
+        dot.returning = false;
       }
     } else if (mouse.x !== null && mouse.y !== null) {
       let dx = dot.x - mouse.x;
@@ -115,20 +150,6 @@ function animate() {
       }
     }
 
-    // prevents ugly dot lines/clumps
-    for (let other of dots) {
-      if (dot === other) continue;
-
-      let dx = dot.x - other.x;
-      let dy = dot.y - other.y;
-      let dist = Math.sqrt(dx * dx + dy * dy);
-
-      if (dist > 0 && dist < 10) {
-        dot.x += (dx / dist) * 0.4;
-        dot.y += (dy / dist) * 0.4;
-      }
-    }
-
     ctx.fillStyle = "white";
     ctx.beginPath();
     ctx.arc(dot.x, dot.y, dot.size, 0, Math.PI * 2);
@@ -139,6 +160,8 @@ function animate() {
 }
 
 resize();
-moveSomeDotsToEmptySpots();
 animate();
 </script>
+
+</body>
+</html>
