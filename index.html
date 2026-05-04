@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>My Profile</title>
+  <title>FLCL</title>
   <style>
     html, body {
       margin: 0;
@@ -36,7 +36,7 @@
 <canvas id="bg"></canvas>
 
 <div class="content">
-  <img src="https://via.placeholder.com/150">
+  <img src="https://cdn.discordapp.com/avatars/1269523754032037935/0b7756e0cdc5edb30c5bf2b3ff9e2bb5.png?size=1024">
   <h1>Your Name</h1>
   <p>This is my custom profile page</p>
 </div>
@@ -52,12 +52,11 @@ function resize() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
   dots = [];
+
   for (let i = 0; i < 200; i++) {
     dots.push({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
-      baseX: Math.random() * canvas.width,
-      baseY: Math.random() * canvas.height,
       size: Math.random() * 2 + 1,
       density: Math.random() * 30 + 1
     });
@@ -80,12 +79,15 @@ function animate() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   for (let dot of dots) {
+
+    // draw dot
     ctx.fillStyle = "white";
     ctx.beginPath();
     ctx.arc(dot.x, dot.y, dot.size, 0, Math.PI * 2);
     ctx.fill();
 
-    if (mouse.x && mouse.y) {
+    // push away from mouse
+    if (mouse.x !== null && mouse.y !== null) {
       let dx = mouse.x - dot.x;
       let dy = mouse.y - dot.y;
       let dist = Math.sqrt(dx * dx + dy * dy);
@@ -94,10 +96,22 @@ function animate() {
         let force = (mouse.radius - dist) / mouse.radius;
         dot.x -= (dx / dist) * force * dot.density;
         dot.y -= (dy / dist) * force * dot.density;
-      } else {
-        dot.x += (dot.baseX - dot.x) * 0.05;
-        dot.y += (dot.baseY - dot.y) * 0.05;
       }
+    }
+
+    // OPTIONAL: slight drifting (remove if you want completely still dots)
+    dot.x += (Math.random() - 0.5) * 0.2;
+    dot.y += (Math.random() - 0.5) * 0.2;
+
+    // ONLY reset if off screen
+    if (
+      dot.x < 0 ||
+      dot.x > canvas.width ||
+      dot.y < 0 ||
+      dot.y > canvas.height
+    ) {
+      dot.x = Math.random() * canvas.width;
+      dot.y = Math.random() * canvas.height;
     }
   }
 
