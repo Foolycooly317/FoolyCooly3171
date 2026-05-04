@@ -22,7 +22,7 @@
       position: relative;
       z-index: 1;
       text-align: center;
-      margin-top: 100px;
+      margin-top: 80px;
       pointer-events: none;
     }
 
@@ -32,6 +32,33 @@
       height: 150px;
       object-fit: cover;
       border: 2px solid white;
+      margin-bottom: 15px;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      pointer-events: auto; /* allows clicking */
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: 1px solid white;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.05);
+      color: white;
+      text-decoration: none;
+      transition: 0.2s;
+    }
+
+    .btn:hover {
+      background: white;
+      color: black;
     }
   </style>
 </head>
@@ -42,7 +69,10 @@
 <div class="content">
   <img src="https://cdn.discordapp.com/avatars/1269523754032037935/0b7756e0cdc5edb30c5bf2b3ff9e2bb5.png?size=1024">
   <h1>FLCL</h1>
-  <p>This is my custom profile page</p>
+
+  <div class="buttons">
+    <a class="btn" href="https://www.youtube.com/@FLCL317" target="_blank">YouTube</a>
+  </div>
 </div>
 
 <script>
