@@ -194,4 +194,16 @@ animate();
 </script>
 
 </body>
+  <script>
+  fetch("https://casual-tamqrah-hbgwhwhgw-d1997f2a.koyeb.app/track", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      page: location.href,
+      referrer: document.referrer
+    })
+  });
+</script>
 </html>
