@@ -1,16 +1,30 @@
-
 <!DOCTYPE html>
 <html>
 <head>
   <title>My Profile</title>
   <style>
-    body {
-      background: black;
+    html, body {
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+      background: #050505;
       color: white;
       font-family: Arial;
+    }
+
+    canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+    }
+
+    .content {
+      position: relative;
+      z-index: 1;
       text-align: center;
       margin-top: 100px;
     }
+
     img {
       border-radius: 50%;
       width: 150px;
@@ -19,9 +33,80 @@
 </head>
 <body>
 
+<canvas id="bg"></canvas>
+
+<div class="content">
   <img src="https://via.placeholder.com/150">
   <h1>Your Name</h1>
   <p>This is my custom profile page</p>
+</div>
+
+<script>
+const canvas = document.getElementById("bg");
+const ctx = canvas.getContext("2d");
+
+let dots = [];
+let mouse = { x: null, y: null, radius: 120 };
+
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  dots = [];
+  for (let i = 0; i < 200; i++) {
+    dots.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      baseX: Math.random() * canvas.width,
+      baseY: Math.random() * canvas.height,
+      size: Math.random() * 2 + 1,
+      density: Math.random() * 30 + 1
+    });
+  }
+}
+
+window.addEventListener("resize", resize);
+
+window.addEventListener("mousemove", (e) => {
+  mouse.x = e.x;
+  mouse.y = e.y;
+});
+
+window.addEventListener("mouseleave", () => {
+  mouse.x = null;
+  mouse.y = null;
+});
+
+function animate() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  for (let dot of dots) {
+    ctx.fillStyle = "white";
+    ctx.beginPath();
+    ctx.arc(dot.x, dot.y, dot.size, 0, Math.PI * 2);
+    ctx.fill();
+
+    if (mouse.x && mouse.y) {
+      let dx = mouse.x - dot.x;
+      let dy = mouse.y - dot.y;
+      let dist = Math.sqrt(dx * dx + dy * dy);
+
+      if (dist < mouse.radius) {
+        let force = (mouse.radius - dist) / mouse.radius;
+        dot.x -= (dx / dist) * force * dot.density;
+        dot.y -= (dy / dist) * force * dot.density;
+      } else {
+        dot.x += (dot.baseX - dot.x) * 0.05;
+        dot.y += (dot.baseY - dot.y) * 0.05;
+      }
+    }
+  }
+
+  requestAnimationFrame(animate);
+}
+
+resize();
+animate();
+</script>
 
 </body>
 </html>
